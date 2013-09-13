@@ -1,0 +1,28 @@
+body > .container {
+  padding-top: 56px;
+}
+
+#site-footer {
+  color: #333;
+  font-size: 80%;
+  margin: 5em 0;
+}
+
+#site-footer p {
+  margin-bottom: 0px;
+}
+
+@media (min-width: 768px) {
+  .navbar > .container .navbar-brand {
+    margin-left: -15px;
+  }
+}
+
+.container {
+  max-width: 768px;
+}
+
+article footer {
+  font-size: 80%;
+  margin: 2em 0;
+}
