@@ -3,7 +3,7 @@ import os
 DEBUG = True
 
 SITE_TITLE = "Daniel 'MaTachi' Jonsson"
-REPO_NAME = 'matachi.se'
+REPO_NAME = 'MaTachi.github.io'
 POST_SOURCE_ROOT = 'https://github.com/MaTachi/{}/tree/master/src/pages/'.format(REPO_NAME)
 
 APP_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -16,7 +16,7 @@ PROJECT_ROOT = parent_dir(APP_DIR)
 
 # Build the static files to the project root
 FREEZER_DESTINATION = PROJECT_ROOT
-FREEZER_BASE_URL = 'http://localhost/{}/'.format(REPO_NAME)
+FREEZER_BASE_URL = 'http://localhost/'
 # Don't overwrite app files
 FREEZER_REMOVE_EXTRA_FILES = False
 FLATPAGES_EXTENSION = '.md'
