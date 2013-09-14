@@ -35,3 +35,7 @@ $ ./freeze.py
   version 2.0](https://github.com/thomaspark/bootswatch/blob/gh-pages/LICENSE)
 * [jQuery](http://jquery.com/), [MIT
   License](https://github.com/jquery/jquery/blob/master/MIT-LICENSE.txt)
+* [Font Awesome](http://fontawesome.io/), [SIL Open Font License
+  1.1](http://fontawesome.io/license/)
+* [Lora](https://www.google.com/fonts/specimen/Lora), [SIL Open Font License
+  1.1](https://www.google.com/fonts/specimen/Lora)
