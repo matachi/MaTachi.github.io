@@ -29,6 +29,7 @@ $ ./freeze.py
   License](https://github.com/SimonSapin/Frozen-Flask/blob/master/LICENSE)
 * [Flask-FlatPages](http://pythonhosted.org/Flask-FlatPages/), [BSD
   License](https://github.com/SimonSapin/Flask-FlatPages/blob/master/LICENSE)
+* [Pygments](http://pygments.org/), [BSD License](http://pygments.org/faq/)
 * [Bootstrap](http://getbootstrap.com/), [Apache License version
   2.0](https://github.com/twbs/bootstrap/blob/master/LICENSE)
 * [Bootswatch Readable](http://bootswatch.com/readable/), [Apache License
@@ -39,3 +40,11 @@ $ ./freeze.py
   1.1](http://fontawesome.io/license/)
 * [Lora](https://www.google.com/fonts/specimen/Lora), [SIL Open Font License
   1.1](https://www.google.com/fonts/specimen/Lora)
+
+## Syntax highlighting
+
+The syntax highlighting style sheet was generated with:
+
+```sh
+pygmentize -S manni -f html > manni.css
+```
