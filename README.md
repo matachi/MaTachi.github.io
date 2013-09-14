@@ -11,13 +11,15 @@ License](https://creativecommons.org/licenses/by-sa/3.0/)
 
 ## Install & run
 
-    $ virtualenv -p /usr/bin/python2 env
-    $ source env/bin/activate
-    $ pip install -r requirements.txt
-    # Run local server
-    $ ./run.py
-    # Build static content
-    $ ./freeze.py
+```sh
+$ virtualenv -p /usr/bin/python2 env
+$ source env/bin/activate
+$ pip install -r requirements.txt
+# Run local server
+$ ./run.py
+# Build static content
+$ ./freeze.py
+```
 
 ## Libraries & frameworks
 
