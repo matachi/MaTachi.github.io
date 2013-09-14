@@ -23,6 +23,8 @@ body > .container {
 }
 
 article footer {
+  border-top: 1px solid #eee;
   font-size: 80%;
-  margin: 2em 0;
+  margin: 48px 0;
+  padding: 11px 0 0;
 }
