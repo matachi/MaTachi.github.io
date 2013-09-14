@@ -46,5 +46,5 @@ $ ./freeze.py
 The syntax highlighting style sheet was generated with:
 
 ```sh
-pygmentize -S manni -f html > manni.css
+$ pygmentize -S manni -f html > manni.css
 ```
