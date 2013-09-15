@@ -11,8 +11,10 @@
     <table class="table table-striped">
     {% for page in pages %}
       <tr>
-        <td><a href="{{ url_for('.page', path=page.path) }}">{{ page.title }}</a></td>
+        {% with path = post_path(page.published, page.path) %}
+        <td><a href="{{ url_for('.page', path=path) }}">{{ page.title }}</a></td>
         <td class="text-right">{{ page.published|date }}</td>
+        {% endwith %}
       </tr>
     {% endfor %}
     </table>

@@ -12,5 +12,12 @@ def index():
 
 @blog.route('/<path:path>/')
 def page(path):
+    path = path.split('/')[-1]
     page = pages.get_or_404(path)
     return render_template('blog/page.html', page=page, active='blog')
+
+@blog.context_processor
+def utility_processor():
+    def post_path(date, path):
+        return '{}/{}'.format(date.strftime('%Y/%m/%d'), path)
+    return dict(post_path=post_path)
