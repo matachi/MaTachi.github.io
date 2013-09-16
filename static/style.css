@@ -28,3 +28,8 @@ article footer {
   margin: 48px 0;
   padding: 11px 0 0;
 }
+
+.codehilite pre {
+  overflow: auto;
+  white-space: pre;
+}

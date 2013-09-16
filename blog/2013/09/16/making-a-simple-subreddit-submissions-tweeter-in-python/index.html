@@ -1,0 +1,196 @@
+<!doctype html>
+<html>
+<head>
+  <title>Making a simple subreddit submissions tweeter in Python | Daniel &#39;MaTachi&#39; Jonsson</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="shortcut icon" href="/static/favicon.ico">
+  <link rel="stylesheet" type="text/css" href="//netdna.bootstrapcdn.com/bootswatch/3.0.0/readable/bootstrap.min.css">
+  <link rel="stylesheet" type="text/css" href="/static/style.css">
+  <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
+  <script src="//netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script>
+  <link rel="stylesheet" type="text/css" href="/static/manni.css">
+</head>
+<body>
+<div class="navbar navbar-default navbar-fixed-top">
+  <div class="container">
+    <div class="navbar-header">
+      <a class="navbar-brand" href="/">MaTachi.se</a>
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+    </div>
+    <div class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li><a href="/">about</a></li>
+        <li class="active"><a href="/blog/">blog</a></li>
+        <li><a href="/contact/">contact</a></li>
+      </ul>
+    </div>
+  </div>
+</div>
+<div class="container">
+  
+<div class="row">
+  <div class="col-lg-12">
+    <article>
+      <header class="page-header">
+        <h1>Making a simple subreddit submissions tweeter in Python <small>2013-09-16</small></h1>
+      </header>
+      <p>In this short post we are going write a simple script in Python that reads
+submissions from a subreddit and posts links to them on Twitter.</p>
+<h2>Setup</h2>
+<p>First, create a <code>virtualenv</code> and activate it with:</p>
+<div class="codehilite"><pre><span class="nv">$ </span>virtualenv -p /usr/bin/python2 env
+<span class="nv">$ </span><span class="nb">source </span>env/bin/activate
+</pre></div>
+
+
+<p>Then install the necessary dependencies <code>tweepy</code> and <code>requests</code>:</p>
+<div class="codehilite"><pre><span class="nv">$ </span>pip install tweepy requests
+</pre></div>
+
+
+<h2>Method for retrieving subreddit submissions</h2>
+<p>Using the library
+<a href="http://docs.python-requests.org/en/latest/index.html">requests</a> we will fetch
+new submissions from a subreddit:</p>
+<div class="codehilite"><pre><span class="kn">import</span> <span class="nn">requests</span>
+<span class="k">def</span> <span class="nf">get_reddit_posts</span><span class="p">(</span><span class="n">subreddit</span><span class="p">,</span> <span class="n">number_of_posts</span><span class="p">):</span>
+    <span class="n">reddit</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;http://www.reddit.com/r/{}/new/.json?limit={}&#39;</span>
+                              <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">subreddit</span><span class="p">,</span> <span class="n">number_of_posts</span><span class="p">),</span>
+                          <span class="n">headers</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;User-Agent&#39;</span><span class="p">:</span> <span class="s">&#39;Reddit Tweeter&#39;</span><span class="p">})</span>
+    <span class="n">submissions</span> <span class="o">=</span> <span class="n">reddit</span><span class="o">.</span><span class="n">json</span><span class="p">()[</span><span class="s">&#39;data&#39;</span><span class="p">][</span><span class="s">&#39;children&#39;</span><span class="p">]</span>
+    <span class="n">submissions</span> <span class="o">=</span> <span class="p">[{</span><span class="s">&#39;id&#39;</span><span class="p">:</span> <span class="n">s</span><span class="p">[</span><span class="s">&#39;data&#39;</span><span class="p">][</span><span class="s">&#39;id&#39;</span><span class="p">],</span>
+                    <span class="s">&#39;title&#39;</span><span class="p">:</span> <span class="n">s</span><span class="p">[</span><span class="s">&#39;data&#39;</span><span class="p">][</span><span class="s">&#39;title&#39;</span><span class="p">],</span>
+                    <span class="s">&#39;url&#39;</span><span class="p">:</span> <span class="s">&#39;http://redd.it/{}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="s">&#39;data&#39;</span><span class="p">][</span><span class="s">&#39;id&#39;</span><span class="p">])</span>
+                   <span class="p">}</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">submissions</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">submissions</span>
+</pre></div>
+
+
+<p>The method returns a list of dictionaries containing the submissions' IDs,
+titles and URLs.</p>
+<h2>Get a Twitter access token and consumer key</h2>
+<p>Visit <a href="https://dev.twitter.com/apps">Twitter's dev page</a> and create a new app.
+When you have created an app, visit its settings page and change <code>Access</code> to
+<code>Read and Write</code>. Then go back to the <code>Details</code> view and create an access
+token.</p>
+<p>When that's done, go back to Python and create the following global variables
+with your data:</p>
+<div class="codehilite"><pre><span class="n">ACCESS_TOKEN</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>
+<span class="n">ACCESS_TOKEN_SECRET</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>
+<span class="n">CONSUMER_KEY</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>
+<span class="n">CONSUMER_SECRET</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>
+</pre></div>
+
+
+<h2>Method for posting submissions to Twitter</h2>
+<p>Define the following global variables:</p>
+<div class="codehilite"><pre><span class="n">TAGS</span> <span class="o">=</span> <span class="s">&#39;#Python #Programming&#39;</span>
+<span class="n">SUBREDDIT</span> <span class="o">=</span> <span class="s">&#39;python&#39;</span>
+<span class="n">NUMBER_OF_POSTS</span> <span class="o">=</span> <span class="mi">30</span>
+</pre></div>
+
+
+<p>Of course are you free to change these values to anything you want.</p>
+<p>Then write the following method:</p>
+<div class="codehilite"><pre><span class="kn">import</span> <span class="nn">tweepy</span>
+<span class="k">def</span> <span class="nf">tweet</span><span class="p">(</span><span class="n">submissions</span><span class="p">):</span>
+    <span class="n">auth</span> <span class="o">=</span> <span class="n">tweepy</span><span class="o">.</span><span class="n">OAuthHandler</span><span class="p">(</span><span class="n">CONSUMER_KEY</span><span class="p">,</span> <span class="n">CONSUMER_SECRET</span><span class="p">)</span>
+    <span class="n">auth</span><span class="o">.</span><span class="n">set_access_token</span><span class="p">(</span><span class="n">ACCESS_TOKEN</span><span class="p">,</span> <span class="n">ACCESS_TOKEN_SECRET</span><span class="p">)</span>
+    <span class="n">api</span> <span class="o">=</span> <span class="n">tweepy</span><span class="o">.</span><span class="n">API</span><span class="p">(</span><span class="n">auth</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">each</span> <span class="ow">in</span> <span class="n">submissions</span><span class="p">:</span>
+        <span class="c"># Add the url and the tags to the tweet</span>
+        <span class="n">tweet</span> <span class="o">=</span> <span class="s">u&#39;{} {}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">each</span><span class="p">[</span><span class="s">&#39;url&#39;</span><span class="p">],</span> <span class="n">TAGS</span><span class="p">)</span>
+        <span class="n">title_length</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">each</span><span class="p">[</span><span class="s">&#39;title&#39;</span><span class="p">])</span>
+        <span class="n">title</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="k">if</span> <span class="n">title_length</span> <span class="o">&lt;</span> <span class="mi">139</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">tweet</span><span class="p">):</span>
+            <span class="c"># The whole title fits in the tweet</span>
+            <span class="n">title</span> <span class="o">=</span> <span class="n">each</span><span class="p">[</span><span class="s">&#39;title&#39;</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c"># If the title doesn&#39;t fit, make it end with `...`</span>
+            <span class="n">title</span> <span class="o">=</span> <span class="s">u&#39;{}...&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">each</span><span class="p">[</span><span class="s">&#39;title&#39;</span><span class="p">][:</span><span class="mi">139</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">tweet</span><span class="p">)</span> <span class="o">-</span> <span class="mi">4</span><span class="p">])</span>
+        <span class="n">tweet</span> <span class="o">=</span> <span class="s">u&#39;{} {}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">title</span><span class="p">,</span> <span class="n">tweet</span><span class="p">)</span>
+        <span class="k">print</span><span class="p">(</span><span class="s">u&#39;[bot] posting: {}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">tweet</span><span class="p">))</span>
+        <span class="c"># Try to post the tweet</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">api</span><span class="o">.</span><span class="n">update_status</span><span class="p">(</span><span class="n">tweet</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">tweepy</span><span class="o">.</span><span class="n">TweepError</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">e</span><span class="o">.</span><span class="n">message</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s">&#39;code&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">187</span><span class="p">:</span>
+                <span class="k">print</span><span class="p">(</span><span class="s">&#39;[bot] Tweet is a duplicate&#39;</span><span class="p">)</span>
+                <span class="k">continue</span>
+</pre></div>
+
+
+<ul>
+<li>This method takes the list of submissions as an argument.</li>
+<li>Then it sets up access to Twitter's API.</li>
+<li>For each submission it will post a tweet.<ul>
+<li>First we set <code>tweet</code> to Reddit's short URL and the previously specified
+  tags.</li>
+<li>If the length of the title is shorter than the URL and the tags we can
+  just prepend it to the tweet. Otherwise we cuts the title off and ends it
+with <code>...</code>.</li>
+<li>When the tweet is ready, post it to Twitter with
+  <code>api.update_status(tweet)</code>.</li>
+</ul>
+</li>
+</ul>
+<h2>Main method</h2>
+<p>Lastly we will write the main method that binds the previously two methods
+together:</p>
+<div class="codehilite"><pre><span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">submissions</span> <span class="o">=</span> <span class="n">get_reddit_posts</span><span class="p">(</span><span class="n">SUBREDDIT</span><span class="p">,</span> <span class="n">NUMBER_OF_POSTS</span><span class="p">)</span>
+    <span class="n">tweet</span><span class="p">(</span><span class="n">submissions</span><span class="p">)</span>
+</pre></div>
+
+
+<h2>Complete script</h2>
+<script src="https://gist.github.com/MaTachi/6584762.js"></script>
+
+<h2>Room for further improvements</h2>
+<p>This is just a very first version of something that could become a nice bot.
+For example could the submission IDs be stored in a file or a SQLite database
+to keep track of which submission that have already been tweeted. The global
+variables could be moved to a separate .ini config file. We could use a proper
+logger. And we could also set up a cronjob to automatically post new tweets
+regularly.</p>
+<h2>Inspiration</h2>
+<p>I wrote this post because of the inspiration I got from this <a href="http://www.reddit.com/r/Python/comments/1mdlq1/making_a_reddit_twitter_bot/">Reddit
+discussion</a>
+about another Reddit + Twitter bot.</p>
+      <footer>
+        
+        Post source code: <a href="https://github.com/MaTachi/MaTachi.github.io/tree/master/src/pages/making-a-simple-subreddit-submissions-tweeter-in-python.md">https://github.com/MaTachi/MaTachi.github.io/tree/master/src/pages/making-a-simple-subreddit-submissions-tweeter-in-python.md</a>
+        
+      </footer>
+    </article>
+    <div id="disqus_thread"></div>
+    <script type="text/javascript">
+        var disqus_shortname = 'matachi';
+        (function() {
+            var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        })();
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+    <a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+  </div>
+</div>
+
+  <footer id="site-footer">
+    <div class="row">
+      <div class="col-lg-12">
+        <p>© Daniel Jonsson 2013. All content is licensed under the <a href="https://creativecommons.org/licenses/by-sa/3.0/">Creative Commons Attribution-ShareAlike 3.0 License</a>.</p>
+        <p>The site's source code is available on <a href="https://github.com/MaTachi/MaTachi.github.io">Github</a>.</p>
+        <p>Theme from <a href="http://bootswatch.com/readable/">Bootswatch</a>. Icons from <a href="http://fontawesome.io/">Font Awesome</a>. Font from <a href="https://www.google.com/fonts/specimen/Lora">Google</a>.
+      </div>
+    </div>
+  </footer>
+</div>
+</body>
+</html>
