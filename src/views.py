@@ -1,5 +1,6 @@
+import os
 from flask import render_template
-
+from flask import send_from_directory
 from app import app
 
 @app.route('/')
@@ -9,6 +10,12 @@ def index():
 @app.route('/contact/')
 def contact():
     return render_template('contact.html', active='contact')
+
+@app.route('/favicon.ico')
+def favicon():
+    return send_from_directory(os.path.join(app.root_path, 'static'),
+                               'favicon.ico',
+                               mimetype='image/vnd.microsoft.icon')
 
 @app.context_processor
 def utility_processor():
