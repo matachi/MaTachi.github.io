@@ -3,6 +3,8 @@ import os
 DEBUG = True
 
 SITE_TITLE = "Daniel 'MaTachi' Jonsson"
+SITE_URL = 'http://matachi.se'
+AUTHOR = SITE_TITLE
 REPO_NAME = 'MaTachi.github.io'
 POST_SOURCE_ROOT = 'https://github.com/MaTachi/{}/tree/master/src/pages/'.format(REPO_NAME)
 

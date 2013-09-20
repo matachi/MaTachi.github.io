@@ -2,7 +2,10 @@
 
 {% block title %}{{ page_title(page.title) }}{% endblock %}
 
-{% block head_extra %}<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='manni.css') }}">{% endblock %}
+{% block head_extra %}
+<link rel="alternate" type="application/atom+xml" href="{{ url_for('.feed') }}" title="Atom 1.0">
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='manni.css') }}">
+{% endblock %}
 
 {% block content %}
 <div class="row">
