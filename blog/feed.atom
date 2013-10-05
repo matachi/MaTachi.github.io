@@ -2,10 +2,85 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
   <title type="text">Daniel 'MaTachi' Jonsson</title>
   <id>http://matachi.se/blog/feed.atom</id>
-  <updated>2013-09-16T00:00:00Z</updated>
+  <updated>2013-10-05T00:00:00Z</updated>
   <link href="http://matachi.se" />
   <link href="http://matachi.se/blog/feed.atom" rel="self" />
   <generator>Werkzeug</generator>
+  <entry xml:base="http://matachi.se/blog/feed.atom">
+    <title type="text">POST to a WordPress JSON REST API from Python</title>
+    <id>http://matachi.se/blog/2013/10/05/post-to-a-wordpress-json-rest-api-from-python</id>
+    <updated>2013-10-05T00:00:00Z</updated>
+    <published>2013-10-05T00:00:00Z</published>
+    <link href="http://matachi.se/blog/2013/10/05/post-to-a-wordpress-json-rest-api-from-python" />
+    <author>
+      <name>Daniel 'MaTachi' Jonsson</name>
+    </author>
+    <content type="html">&lt;p&gt;In this post I'm gonna show how you can create pages on a WordPress blog from a
+Python script.&lt;/p&gt;
+&lt;p&gt;For this to work, you first have to install the plugin &lt;a href=&quot;http://wordpress.org/plugins/json-rest-api/&quot;&gt;JSON REST
+API&lt;/a&gt; on your WordPress blog. We
+will also use the Python library
+&lt;a href=&quot;http://docs.python-requests.org/en/latest/index.html&quot;&gt;Requests&lt;/a&gt; to simplify
+making HTTP requests. The &lt;a href=&quot;http://docs.python-requests.org/en/latest/user/quickstart/&quot;&gt;quickstart for
+Requests&lt;/a&gt; contains
+a lot of useful information to get started.&lt;/p&gt;
+&lt;p&gt;What we want to do is to make a &lt;a href=&quot;https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol#Request_methods&quot;&gt;HTTP POST
+request&lt;/a&gt;
+to the REST API.&lt;/p&gt;
+&lt;p&gt;With curl installed (&lt;code&gt;sudo apt-get install curl&lt;/code&gt;) we can make a HTTP POST against the API in the following way:&lt;/p&gt;
+&lt;div class=&quot;codehilite&quot;&gt;&lt;pre&gt;curl -v -H &lt;span class=&quot;s2&quot;&gt;&amp;quot;Accept: application/json&amp;quot;&lt;/span&gt; -H &lt;span class=&quot;s2&quot;&gt;&amp;quot;Content-Type: application/json&amp;quot;&lt;/span&gt; -X POST -d &lt;span class=&quot;s1&quot;&gt;&amp;#39;{&amp;quot;title&amp;quot;:&amp;quot;Title&amp;quot;,&amp;quot;content&amp;quot;:&amp;quot;Content&amp;quot;,&amp;quot;type&amp;quot;:&amp;quot;page&amp;quot;}&amp;#39;&lt;/span&gt; http://localhost/wp-json.php/posts -u admin:password
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;This where I found the &lt;a href=&quot;http://stackoverflow.com/a/5658904/595990&quot;&gt;curl command
+above&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Using curl with the verbose
+argument (&lt;code&gt;-v&lt;/code&gt;) is a good way to perform HTTP debugging, for example to see how
+a REST API behaves.&lt;/p&gt;
+&lt;p&gt;The last argument in the curl command above is &lt;code&gt;-u admin:password&lt;/code&gt;.  This
+basically adds a header called &lt;code&gt;Authorization&lt;/code&gt; to the request, encodes the
+string &lt;code&gt;admin:password&lt;/code&gt; with &lt;a href=&quot;https://en.wikipedia.org/wiki/Base64&quot;&gt;Base64&lt;/a&gt;,
+and finally adds &lt;code&gt;Basic&lt;/code&gt; along with the encoded string to the header field. The
+result is the header &lt;code&gt;Authorization: Basic YWRtaW46cGFzc3dvcmQ=&lt;/code&gt;. This method
+of authentication is called &lt;a href=&quot;http://en.wikipedia.org/wiki/Basic_access_authentication&quot;&gt;Basic access
+authentication&lt;/a&gt;, and
+must in this case be added to be able to create a new WordPress page/post.&lt;/p&gt;
+&lt;p&gt;WordPress JSON REST API's complete schema can be read on their &lt;a href=&quot;https://github.com/rmccue/WP-API/blob/master/docs/schema.md&quot;&gt;Github
+page&lt;/a&gt;, for
+additional properties when creating a post etc.&lt;/p&gt;
+&lt;p&gt;Doing this from Python can be done in the following way:&lt;/p&gt;
+&lt;div class=&quot;codehilite&quot;&gt;&lt;pre&gt;&lt;span class=&quot;kn&quot;&gt;from&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;base64&lt;/span&gt; &lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;b64encode&lt;/span&gt;
+&lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;json&lt;/span&gt;
+&lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;requests&lt;/span&gt;
+
+
+&lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;create_wordpress_page&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;title&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;content&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;publish&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;):&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;url&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&amp;#39;http://localhost/wp-json.php/posts&amp;#39;&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;auth&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;b64encode&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&amp;#39;{}:{}&amp;#39;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;format&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&amp;#39;admin&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&amp;#39;password&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;payload&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;s&quot;&gt;&amp;#39;title&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;title&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+        &lt;span class=&quot;s&quot;&gt;&amp;#39;type&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&amp;#39;page&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+        &lt;span class=&quot;s&quot;&gt;&amp;#39;content_raw&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;content&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+        &lt;span class=&quot;s&quot;&gt;&amp;#39;status&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&amp;#39;publish&amp;#39;&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;publish&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;else&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&amp;#39;draft&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;headers&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;s&quot;&gt;&amp;#39;Accept&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&amp;#39;application/json&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+        &lt;span class=&quot;s&quot;&gt;&amp;#39;Content-Type&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&amp;#39;application/json&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+        &lt;span class=&quot;s&quot;&gt;&amp;#39;Authorization&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&amp;#39;Basic {}&amp;#39;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;format&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;auth&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;),&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;r&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;requests&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;post&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;url&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;data&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;json&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;dumps&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;payload&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;),&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;headers&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;headers&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;response&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;json&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;loads&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;r&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;content&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;response&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&amp;#39;link&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
+
+
+&lt;span class=&quot;n&quot;&gt;create_wordpress_page&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&amp;#39;Title&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&amp;#39;Content&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;bp&quot;&gt;True&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Here we have used the two functions &lt;code&gt;dumps&lt;/code&gt; and &lt;code&gt;loads&lt;/code&gt; from the &lt;a href=&quot;http://docs.python.org/3.3/library/json.html&quot;&gt;JSON
+module&lt;/a&gt;. &lt;code&gt;dumps&lt;/code&gt; is used to
+encode Python data types to JSON, while &lt;code&gt;loads&lt;/code&gt; is used to decode JSON.&lt;/p&gt;</content>
+  </entry>
   <entry xml:base="http://matachi.se/blog/feed.atom">
     <title type="text">Making a simple subreddit submissions tweeter in Python</title>
     <id>http://matachi.se/blog/2013/09/16/making-a-simple-subreddit-submissions-tweeter-in-python</id>

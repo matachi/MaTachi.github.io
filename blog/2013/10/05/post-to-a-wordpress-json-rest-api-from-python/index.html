@@ -1,0 +1,142 @@
+<!doctype html>
+<html>
+<head>
+  <title>POST to a WordPress JSON REST API from Python | Daniel &#39;MaTachi&#39; Jonsson</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="author" content="Daniel &#39;MaTachi&#39; Jonsson">
+  <link rel="icon" href="/static/favicon.ico" sizes="16x16 32x32 64x64" type="image/vnd.microsoft.icon">
+  <link rel="stylesheet" type="text/css" href="//netdna.bootstrapcdn.com/bootswatch/3.0.0/readable/bootstrap.min.css">
+  <link rel="stylesheet" type="text/css" href="/static/style.css">
+  <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
+  <script src="//netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script>
+  
+<link rel="alternate" type="application/atom+xml" href="/blog/feed.atom" title="Atom 1.0">
+<link rel="stylesheet" type="text/css" href="/static/manni.css">
+
+</head>
+<body>
+<div class="navbar navbar-default navbar-fixed-top">
+  <div class="container">
+    <div class="navbar-header">
+      <a class="navbar-brand" href="/">MaTachi.se</a>
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+    </div>
+    <div class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li><a href="/">about</a></li>
+        <li class="active"><a href="/blog/">blog</a></li>
+        <li><a href="/contact/">contact</a></li>
+      </ul>
+    </div>
+  </div>
+</div>
+<div class="container">
+  
+<div class="row">
+  <div class="col-lg-12">
+    <article>
+      <header class="page-header">
+        <h1>POST to a WordPress JSON REST API from Python <small>2013-10-05</small></h1>
+      </header>
+      <p>In this post I'm gonna show how you can create pages on a WordPress blog from a
+Python script.</p>
+<p>For this to work, you first have to install the plugin <a href="http://wordpress.org/plugins/json-rest-api/">JSON REST
+API</a> on your WordPress blog. We
+will also use the Python library
+<a href="http://docs.python-requests.org/en/latest/index.html">Requests</a> to simplify
+making HTTP requests. The <a href="http://docs.python-requests.org/en/latest/user/quickstart/">quickstart for
+Requests</a> contains
+a lot of useful information to get started.</p>
+<p>What we want to do is to make a <a href="https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol#Request_methods">HTTP POST
+request</a>
+to the REST API.</p>
+<p>With curl installed (<code>sudo apt-get install curl</code>) we can make a HTTP POST against the API in the following way:</p>
+<div class="codehilite"><pre>curl -v -H <span class="s2">&quot;Accept: application/json&quot;</span> -H <span class="s2">&quot;Content-Type: application/json&quot;</span> -X POST -d <span class="s1">&#39;{&quot;title&quot;:&quot;Title&quot;,&quot;content&quot;:&quot;Content&quot;,&quot;type&quot;:&quot;page&quot;}&#39;</span> http://localhost/wp-json.php/posts -u admin:password
+</pre></div>
+
+
+<p>This where I found the <a href="http://stackoverflow.com/a/5658904/595990">curl command
+above</a>.</p>
+<p>Using curl with the verbose
+argument (<code>-v</code>) is a good way to perform HTTP debugging, for example to see how
+a REST API behaves.</p>
+<p>The last argument in the curl command above is <code>-u admin:password</code>.  This
+basically adds a header called <code>Authorization</code> to the request, encodes the
+string <code>admin:password</code> with <a href="https://en.wikipedia.org/wiki/Base64">Base64</a>,
+and finally adds <code>Basic</code> along with the encoded string to the header field. The
+result is the header <code>Authorization: Basic YWRtaW46cGFzc3dvcmQ=</code>. This method
+of authentication is called <a href="http://en.wikipedia.org/wiki/Basic_access_authentication">Basic access
+authentication</a>, and
+must in this case be added to be able to create a new WordPress page/post.</p>
+<p>WordPress JSON REST API's complete schema can be read on their <a href="https://github.com/rmccue/WP-API/blob/master/docs/schema.md">Github
+page</a>, for
+additional properties when creating a post etc.</p>
+<p>Doing this from Python can be done in the following way:</p>
+<div class="codehilite"><pre><span class="kn">from</span> <span class="nn">base64</span> <span class="kn">import</span> <span class="n">b64encode</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">requests</span>
+
+
+<span class="k">def</span> <span class="nf">create_wordpress_page</span><span class="p">(</span><span class="n">title</span><span class="p">,</span> <span class="n">content</span><span class="p">,</span> <span class="n">publish</span><span class="p">):</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="s">&#39;http://localhost/wp-json.php/posts&#39;</span>
+    <span class="n">auth</span> <span class="o">=</span> <span class="n">b64encode</span><span class="p">(</span><span class="s">&#39;{}:{}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s">&#39;admin&#39;</span><span class="p">,</span> <span class="s">&#39;password&#39;</span><span class="p">))</span>
+    <span class="n">payload</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s">&#39;title&#39;</span><span class="p">:</span> <span class="n">title</span><span class="p">,</span>
+        <span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="s">&#39;page&#39;</span><span class="p">,</span>
+        <span class="s">&#39;content_raw&#39;</span><span class="p">:</span> <span class="n">content</span><span class="p">,</span>
+        <span class="s">&#39;status&#39;</span><span class="p">:</span> <span class="s">&#39;publish&#39;</span> <span class="k">if</span> <span class="n">publish</span> <span class="k">else</span> <span class="s">&#39;draft&#39;</span><span class="p">,</span>
+    <span class="p">}</span>
+    <span class="n">headers</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s">&#39;Accept&#39;</span><span class="p">:</span> <span class="s">&#39;application/json&#39;</span><span class="p">,</span>
+        <span class="s">&#39;Content-Type&#39;</span><span class="p">:</span> <span class="s">&#39;application/json&#39;</span><span class="p">,</span>
+        <span class="s">&#39;Authorization&#39;</span><span class="p">:</span> <span class="s">&#39;Basic {}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">auth</span><span class="p">),</span>
+    <span class="p">}</span>
+    <span class="n">r</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">payload</span><span class="p">),</span> <span class="n">headers</span><span class="o">=</span><span class="n">headers</span><span class="p">)</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">content</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">response</span><span class="p">[</span><span class="s">&#39;link&#39;</span><span class="p">]</span>
+
+
+<span class="n">create_wordpress_page</span><span class="p">(</span><span class="s">&#39;Title&#39;</span><span class="p">,</span> <span class="s">&#39;Content&#39;</span><span class="p">,</span> <span class="bp">True</span><span class="p">)</span>
+</pre></div>
+
+
+<p>Here we have used the two functions <code>dumps</code> and <code>loads</code> from the <a href="http://docs.python.org/3.3/library/json.html">JSON
+module</a>. <code>dumps</code> is used to
+encode Python data types to JSON, while <code>loads</code> is used to decode JSON.</p>
+      <footer>
+        
+        Post source code: <a href="https://github.com/MaTachi/MaTachi.github.io/tree/master/src/pages/post-to-a-wordpress-json-rest-api-from-python.md">https://github.com/MaTachi/MaTachi.github.io/tree/master/src/pages/post-to-a-wordpress-json-rest-api-from-python.md</a>
+        
+      </footer>
+    </article>
+    <div id="disqus_thread"></div>
+    <script type="text/javascript">
+        var disqus_shortname = 'matachi';
+        (function() {
+            var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        })();
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+    <a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+  </div>
+</div>
+
+  <footer id="site-footer">
+    <div class="row">
+      <div class="col-lg-12">
+        <p>© Daniel Jonsson 2013. All content is licensed under the <a href="https://creativecommons.org/licenses/by/3.0/">Creative Commons Attribution 3.0 License</a>.</p>
+        <p>The site's source code is available on <a href="https://github.com/MaTachi/MaTachi.github.io">Github</a>.</p>
+        <p>Theme from <a href="http://bootswatch.com/readable/">Bootswatch</a>. Icons from <a href="http://fontawesome.io/">Font Awesome</a>. Font from <a href="https://www.google.com/fonts/specimen/Lora">Google</a>.
+      </div>
+    </div>
+  </footer>
+</div>
+</body>
+</html>
