@@ -1,0 +1,293 @@
+<!doctype html>
+<html>
+<head>
+  <title>Solutions to the wargame XSS Challenges at xss-quiz.int21h.jp | Daniel &#39;MaTachi&#39; Jonsson</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="author" content="Daniel &#39;MaTachi&#39; Jonsson">
+  <link rel="icon" href="/static/favicon.ico" sizes="16x16 32x32 64x64" type="image/vnd.microsoft.icon">
+  <link rel="stylesheet" type="text/css" href="//netdna.bootstrapcdn.com/bootswatch/3.0.0/readable/bootstrap.min.css">
+  <link rel="stylesheet" type="text/css" href="/static/style.css">
+  <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
+  <script src="//netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script>
+  
+<link rel="alternate" type="application/atom+xml" href="/blog/feed.atom" title="Atom 1.0">
+<link rel="stylesheet" type="text/css" href="/static/manni.css">
+
+</head>
+<body>
+<div class="navbar navbar-default navbar-fixed-top">
+  <div class="container">
+    <div class="navbar-header">
+      <a class="navbar-brand" href="/">MaTachi.se</a>
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+    </div>
+    <div class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li><a href="/">about</a></li>
+        <li class="active"><a href="/blog/">blog</a></li>
+        <li><a href="/contact/">contact</a></li>
+      </ul>
+    </div>
+  </div>
+</div>
+<div class="container">
+  
+<div class="row">
+  <div class="col-lg-12">
+    <article>
+      <header class="page-header">
+        <h1>Solutions to the wargame XSS Challenges at xss-quiz.int21h.jp <small>2013-11-28</small></h1>
+      </header>
+      <p>In this blog post I will describe how to solve (most of) the stages in the XSS
+(cross-site scripting) wargame XSS Challenges at <a href="http://xss-quiz.int21h.jp/">http://xss-quiz.int21h.jp/</a>.
+The only tool I will use is the trusty Firefox.</p>
+<h2>Stage #1</h2>
+<p>The server will in its response output the search term into the HTML page.
+Simply post</p>
+<div class="codehilite"><pre><span class="nt">&lt;script&gt;</span><span class="nx">alert</span><span class="p">(</span><span class="nb">document</span><span class="p">.</span><span class="nx">domain</span><span class="p">);</span><span class="nt">&lt;/script&gt;</span>
+</pre></div>
+
+
+<p>and we will finish stage #1.</p>
+<h2>Stage #2</h2>
+<p>This time the server won't put the search term directly into the page. Instead
+it will be inserted into the input's value attribute. Therefore we will need to
+post</p>
+<div class="codehilite"><pre>&quot;&gt;<span class="nt">&lt;script&gt;</span><span class="nx">alert</span><span class="p">(</span><span class="nb">document</span><span class="p">.</span><span class="nx">domain</span><span class="p">);</span><span class="nt">&lt;/script&gt;</span>
+</pre></div>
+
+
+<p>to first close the input element.</p>
+<h2>Stage #3</h2>
+<p>The server is now properly escaping tags (<code>&gt;</code> and <code>&lt;</code>) from the text field.
+Therefore posting</p>
+<div class="codehilite"><pre><span class="nt">&lt;script&gt;</span><span class="nx">alert</span><span class="p">(</span><span class="nb">document</span><span class="p">.</span><span class="nx">domain</span><span class="p">);</span><span class="nt">&lt;/script&gt;</span>
+</pre></div>
+
+
+<p>won't do. Even though the select widget has a fixed set of options (Japan,
+Germany, USA and United Kingdom), there isn't really anything preventing us
+from selecting and posting whatever value we want. Right-click the select
+widget and choose <em>Inspect Element</em> from the context menu. Then in Firefox's
+Inspector tool, double-click the text for one of the options and change it to
+JavaScript code above. Put something in the text field and submit the form and
+finish the stage.</p>
+<h2>Stage #4</h2>
+<p>Right-click in the form and select <em>Inspect Element</em> from the context menu to
+show Firefox's Inspector tool. Find the hidden input field with the name <code>p3</code>.
+The default value for this field is <code>hackme</code>. In the response from submitting
+the form to the server this field's submitted value will be kept. What we want
+to do is to submit</p>
+<div class="codehilite"><pre>&quot;&gt; <span class="nt">&lt;script&gt;</span><span class="nx">alert</span><span class="p">(</span><span class="nb">document</span><span class="p">.</span><span class="nx">domain</span><span class="p">);</span><span class="nt">&lt;/script&gt;</span>
+</pre></div>
+
+
+<p>to the server, since that will break out from the input field and insert the
+script into the page.  However, trying to insert that into the input field's
+value attribute with Firefox's Inspector tool won't work, because of the <code>"</code>
+character at the beginning. Instead, insert</p>
+<div class="codehilite"><pre><span class="err">&amp;</span>#34&gt; <span class="nt">&lt;script&gt;</span><span class="nx">alert</span><span class="p">(</span><span class="nb">document</span><span class="p">.</span><span class="nx">domain</span><span class="p">);</span><span class="nt">&lt;/script&gt;</span>
+</pre></div>
+
+
+<p>into the attribute's value field (with the <code>"</code> character escaped to <code>&amp;#34</code>).
+Escaping ASCII characters can easily be done through this character encoding
+calculator: <a href="http://ha.ckers.org/xsscalc.html">http://ha.ckers.org/xsscalc.html</a>.</p>
+<h2>Stage #5</h2>
+<p>The input field's max length limit is just an artificial limit set in the HTML
+and nothing that is enforced on the server-side. Simply increase <code>maxlength</code> to
+something larger than 15 using Firefox's DOM Inspector tool and submit</p>
+<div class="codehilite"><pre>&quot;&gt; <span class="nt">&lt;script&gt;</span><span class="nx">alert</span><span class="p">(</span><span class="nb">document</span><span class="p">.</span><span class="nx">domain</span><span class="p">);</span><span class="nt">&lt;/script&gt;</span>
+</pre></div>
+
+
+<h2>Stage #6</h2>
+<p>On this stage the tags <code>&gt;</code> and <code>&lt;</code> are properly escaped on the server to <code>&amp;gt;</code>
+and <code>&amp;lt;</code>. But the rest of the characters aren't. By submitting</p>
+<div class="codehilite"><pre>123&quot; onmouseover=&quot;alert(document.domain);
+</pre></div>
+
+
+<p>the input's value attribute will in the response be filled with <code>123</code>. But the
+element will also have an additional attribute that will show the alert window
+when hovering the mouse cursor over the field.</p>
+<h2>Stage #7</h2>
+<p>The server is now also escaping quotation marks, like <code>"</code> and <code>'</code>. However,
+they missed to put quotes characters around the input's <code>value</code> attribute's
+value, meaning that we still easily can add an additional attribute to the
+element. By posting</p>
+<div class="codehilite"><pre>a onmouseover=alert(document.domain);
+</pre></div>
+
+
+<p>, <code>a</code> will be the field's value and the additional element attribute will be
+<code>onmouseover</code>. This works because it's not a requirement to put quotes around
+an attribute value in HTML.</p>
+<h2>Stage #8</h2>
+<p>On this stage we need to take advantage of a technique that was used in the
+old, dark days of HTML to make clickable links that executed JavaScript and
+didn't leave the page. The solution to this stage is to submit the link</p>
+<div class="codehilite"><pre>javascript:alert(document.domain);
+</pre></div>
+
+
+<p>Christian Heilmann is ranting on these <code>javascript:</code> links, among other things,
+in his blog post <a href="http://christianheilmann.com/2013/10/31/perpetuating-terrible-javascript-practices/">Perpetuating terrible javaScript
+practices</a>.</p>
+<h2>Stage #9</h2>
+<p>Solving this stage won't work in any modern browser since it's dependent on
+support for UTF-7. The XSS attack is described on <a href="https://www.owasp.org/index.php/XSS_Filter_Evasion_Cheat_Sheet#UTF-7_encoding&gt;">OWASP's wiki
+site</a>.
+Support for <a href="https://bugzilla.mozilla.org/show_bug.cgi?id=414064">UTF-7 was completely removed from
+Firefox</a> several years ago
+(per HTML5 spec).</p>
+<p>To cheat/skip this stage, open Firefox's Web Console and execute
+<code>alert(document.domain);</code>. This will show the alert which will trigger the
+congratulations message.</p>
+<h2>Stage #10</h2>
+<p>Try to submit <code>adomainbdomain123</code> and you will see that <code>ab123</code> is returned.
+It's obvious that the server is removing any instance of the word <code>domain</code> from
+the search query. A logical solution is to obfuscate the JavaScript expression.</p>
+<p>Start with converting <code>alert(document.domain);</code> to Base64 with the <a href="http://ha.ckers.org/xsscalc.html">Character
+Encoding Calculator</a> we previously used. Via
+the Stack Overflow question <a href="http://stackoverflow.com/q/2820249/595990">Base64 encoding and decoding in client-side
+Javascript</a> we find that all modern
+browsers have a global function galled <code>atob()</code> to decode Base64 strings, <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Base64_encoding_and_decoding">read
+more on Mozilla Developer
+Network</a>.
+To execute a string as JavaScript, use
+<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/eval">eval()</a>.
+The result that we will submit is:</p>
+<div class="codehilite"><pre>&quot;&gt;<span class="nt">&lt;script&gt;</span><span class="nb">eval</span><span class="p">(</span><span class="nx">atob</span><span class="p">(</span><span class="s1">&#39;YWxlcnQoZG9jdW1lbnQuZG9tYWluKQ==&#39;</span><span class="p">));</span><span class="nt">&lt;/script&gt;</span>
+</pre></div>
+
+
+<h2>Stage #11</h2>
+<p>Since the words <code>script</code>, <code>style</code> and <code>on</code> aren't allowed, we have to think
+about something else this time. Apparently it's possible to encode JavaScript
+as Base64 and make it execute as an iframe src. From the Stack Overflow
+question <a href="http://stackoverflow.com/a/3462800/595990">Is it possible to "fake" the src attribute of an
+iframe?</a> we can read that it's
+possible to do:</p>
+<div class="codehilite"><pre><span class="nt">&lt;iframe</span> <span class="na">src=</span><span class="s">&quot;data:text/html;base64, .... base64 encoded HTML data ....&quot;</span><span class="nt">&gt;</span>
+</pre></div>
+
+
+<p>Read more about <a href="https://developer.mozilla.org/en-US/docs/data_URIs">data URIs on Mozilla Developer
+Network</a>. The HTML data we
+want to use is:</p>
+<div class="codehilite"><pre><span class="nt">&lt;script&gt;</span><span class="nx">parent</span><span class="p">.</span><span class="nx">alert</span><span class="p">(</span><span class="nb">document</span><span class="p">.</span><span class="nx">domain</span><span class="p">);</span><span class="nt">&lt;/script&gt;</span>
+</pre></div>
+
+
+<p><code>parent.</code> is needed because we want the alert to execute in the context of the
+parent's window. Encoding it as Base64 with the <a href="http://ha.ckers.org/xsscalc.html">Character Encoding
+Calculator</a> results in:</p>
+<div class="codehilite"><pre><span class="n">PHNjcmlwdD5wYXJlbnQuYWxlcnQoZG9jdW1lbnQuZG9tYWluKTs8L3NjcmlwdD4</span>
+</pre></div>
+
+
+<p>The code that we will then put into the search box to finish the level is:</p>
+<div class="codehilite"><pre>&quot;&gt;<span class="nt">&lt;iframe</span> <span class="na">src=</span><span class="s">&quot;data:text/html;base64,PHNjcmlwdD5wYXJlbnQuYWxlcnQoZG9jdW1lbnQuZG9tYWluKTs8L3NjcmlwdD4=&quot;</span><span class="nt">&gt;&lt;/iframe&gt;</span>
+</pre></div>
+
+
+<h2>Stage #12</h2>
+<p>This is yet another level that doesn't seem to work, at least not in a modern
+version of Firefox. According to <a href="http://sla.ckers.org/forum/read.php?2,24209">this
+thread</a> a working solution should
+be:</p>
+<div class="codehilite"><pre>``/onfocus=alert(document.domain)
+</pre></div>
+
+
+<p><code>`</code> should work as a substitute for <code>"</code> and <code>/</code> should work as a delimiter.
+This <a href="http://blog.knownsec.com/Knownsec_RD_Checklist/xss/xss_quiz.txt">xss_quiz.txt
+document</a>
+suggests that this is a working soultion:</p>
+<div class="codehilite"><pre>``onmouseover=alert(document.domain);
+</pre></div>
+
+
+<p>However, neither work for me, so I can only assume that this XSS attack doesn't
+work any longer. At the first stage of the game it's even written that some
+stages only works in IE, and perhaps this is one of them.</p>
+<p>To skip the stage, execute <code>alert(document.domain);</code> in Firefox's console.</p>
+<h2>Stage #13</h2>
+<p>Neither this stage seems to work. On
+<a href="https://www.owasp.org/index.php/XSS_Filter_Evasion_Cheat_Sheet#DIV">OWASP</a>
+there are some suggestions to put into a style attribute, however they won't
+work for me. The
+<a href="http://blog.knownsec.com/Knownsec_RD_Checklist/xss/xss_quiz.txt">xss_quiz.text</a>
+file suggests that the following should work:</p>
+<div class="codehilite"><pre>background-color:#f00;background:url(&quot;javascript:alert(document.domain);&quot;);
+</pre></div>
+
+
+<p>I assume this is also something thas has been fixed.</p>
+<h2>Stage #14</h2>
+<p>The point on this stage is also to inject JavaScript through a style attribute,
+so I assume this neither will work, as the previous stage.</p>
+<h2>Stage #15 &amp; Stage #16</h2>
+<p>Unsure if these two work. We are supposed to inject JavaScript through
+<code>document.write()</code>, but I can't find anything that works.</p>
+<h2>Stage #19</h2>
+<p>This stage's vulnerability is the same one that Twitter once had, read more in
+the blog post <a href="http://blog.mindedsecurity.com/2010/09/twitter-domxss-wrong-fix-and-something.html">A Twitter DomXss, a wrong fix and something
+more</a>.
+However, appending</p>
+<div class="codehilite"><pre>#!javascript:alert(document.domain);
+</pre></div>
+
+
+<p>to the URL doesn't work for me. I'm only redirected to</p>
+<div class="codehilite"><pre><span class="nl">http:</span><span class="c1">//xss-quiz.int21h.jp/javascriptalert(document.domain);</span>
+</pre></div>
+
+
+<p>For further reading, OWASP has a really good article on <a href="https://www.owasp.org/index.php/DOM_Based_XSS">DOM Based
+XSS</a>.</p>
+<h2>Conclusion</h2>
+<p>The first ~11 stages were really fun as problem solving challenges. The latter
+ones were a little wonky, I guess it's because this wargame has some years on
+its neck.</p>
+<p>If you have any tips, suggestion on better or alternative, interesting XSS code,
+or solutions to the stages I didn't manage to solve, please leave a comment
+below.</p>
+      <footer>
+        
+        Post source code: <a href="https://github.com/MaTachi/MaTachi.github.io/tree/master/src/pages/solutions-to-the-wargame-xss-challenges-at-xss-quiz-int21h-jp.md">https://github.com/MaTachi/MaTachi.github.io/tree/master/src/pages/solutions-to-the-wargame-xss-challenges-at-xss-quiz-int21h-jp.md</a>
+        
+      </footer>
+    </article>
+    <div id="disqus_thread"></div>
+    <script type="text/javascript">
+        var disqus_shortname = 'matachi';
+        (function() {
+            var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        })();
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+    <a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+  </div>
+</div>
+
+  <footer id="site-footer">
+    <div class="row">
+      <div class="col-lg-12">
+        <p>© Daniel Jonsson 2013. All content is licensed under the <a href="https://creativecommons.org/licenses/by/3.0/">Creative Commons Attribution 3.0 License</a>.</p>
+        <p>The site's source code is available on <a href="https://github.com/MaTachi/MaTachi.github.io">Github</a>.</p>
+        <p>Theme from <a href="http://bootswatch.com/readable/">Bootswatch</a>. Icons from <a href="http://fontawesome.io/">Font Awesome</a>. Font from <a href="https://www.google.com/fonts/specimen/Lora">Google</a>.
+      </div>
+    </div>
+  </footer>
+</div>
+</body>
+</html>
