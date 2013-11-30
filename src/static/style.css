@@ -33,3 +33,7 @@ article footer {
   overflow: auto;
   white-space: pre;
 }
+
+.container {
+  word-wrap: break-word;
+}
