@@ -38,8 +38,8 @@ $ ./freeze.py
   License](https://github.com/jquery/jquery/blob/master/MIT-LICENSE.txt)
 * [Font Awesome](http://fontawesome.io/), [SIL Open Font License
   1.1](http://fontawesome.io/license/)
-* [Lora](https://www.google.com/fonts/specimen/Lora), [SIL Open Font License
-  1.1](https://www.google.com/fonts/specimen/Lora)
+* [Lato](http://www.google.com/fonts/specimen/Lato), [SIL Open Font License
+  1.1](http://www.google.com/fonts/specimen/Lato)
 
 ## Syntax highlighting
 
