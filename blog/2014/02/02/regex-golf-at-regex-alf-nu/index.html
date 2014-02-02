@@ -1,0 +1,231 @@
+<!doctype html>
+<html>
+<head>
+  <title>Regex golf at regex.alf.nu | Daniel &#39;MaTachi&#39; Jonsson</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="author" content="Daniel &#39;MaTachi&#39; Jonsson">
+  <link rel="icon" href="/static/favicon.ico" sizes="16x16 32x32 64x64" type="image/vnd.microsoft.icon">
+  <link rel="stylesheet" type="text/css" href="//netdna.bootstrapcdn.com/bootswatch/3.0.0/readable/bootstrap.min.css">
+  <link rel="stylesheet" type="text/css" href="/static/style.css">
+  <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
+  <script src="//netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script>
+  
+<link rel="alternate" type="application/atom+xml" href="/blog/feed.atom" title="Atom 1.0">
+<link rel="stylesheet" type="text/css" href="/static/manni.css">
+
+</head>
+<body>
+<div class="navbar navbar-default navbar-fixed-top">
+  <div class="container">
+    <div class="navbar-header">
+      <a class="navbar-brand" href="/">MaTachi.se</a>
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+    </div>
+    <div class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li><a href="/">about</a></li>
+        <li class="active"><a href="/blog/">blog</a></li>
+        <li><a href="/contact/">contact</a></li>
+      </ul>
+    </div>
+  </div>
+</div>
+<div class="container">
+  
+<div class="row">
+  <div class="col-lg-12">
+    <article>
+      <header class="page-header">
+        <h1>Regex golf at regex.alf.nu <small>2014-02-02</small></h1>
+      </header>
+      <p>In this blog post I will summarize some cool and interesting "solutions" to the
+regular expression challenges at <a href="http://www.regex.alf.nu/">http://www.regex.alf.nu/</a>. I write solutions
+inside quotation marks because to some of the levels there are better solutions
+found, but there may also be even better unknown solutions.</p>
+<p>I have found many of the solutions in the comments to this Github Gist:
+<a href="https://gist.github.com/jpsim/8057500">https://gist.github.com/jpsim/8057500</a>.  It's a fun game, and I enjoy reading
+what tricks other people have come up with. I'm not a regex l33t by any means,
+but I think this game is a fun way to see what nifty things you can accomplish
+with regex. There is also a discussion thread <a href="https://news.ycombinator.com/item?id=6941231">at Hacker
+News</a> about the game.</p>
+<p>If you need to brush up your regular expression skills, check out Mozilla
+Developer Network's <a href="https://developer.mozilla.org/en/docs/Web/JavaScript/Guide/Regular_Expressions">article on the
+subject</a>.</p>
+<p>I also found a cool regex visualizer on <a href="http://regexp.quaxio.com/">http://regexp.quaxio.com/</a>.</p>
+<p>And by the way, if you can't get enough of golf, there is also a very well-made
+game called <a href="http://vimgolf.com/">Vim Golf</a>.</p>
+<h2>1. Plain Strings</h2>
+<p>The solution to this level is simply <code>foo</code>, which earns you 207 points.</p>
+<h2>2. Anchors</h2>
+<p>All words in the left column end with the letter k. Therefore the level is
+simply won with <code>k$</code>, giving you 208 points.</p>
+<h2>3. Ranges</h2>
+<p>The left column's words only contain the letters a to f. Writing this with a
+regex yields <code>^[a-f]+$</code> and scores us 202 points.</p>
+<h2>4. Backrefs</h2>
+<p>All words in the left column follow a pattern where three letters in sequence
+appear two times within the word. For example <strong>barbar</strong>y and
+<strong>hea</strong>vy<strong>hea</strong>ded.</p>
+<p>Selecting strings following this pattern can be made with the regex
+<code>(...).*\1</code>, worth 201 points.</p>
+<h2>5. Abba</h2>
+<p>Here we want to select words that <em>don't</em> contain letter sequences looking like
+an<strong>alla</strong>gmatic, hippogr<strong>iffi</strong>n and uncl<strong>assa</strong>bly. Therefore we will use
+<code>?!</code> in regex to negate our selection.</p>
+<p>Here is a solution using negation: <code>^(?!.*(.)(.)\2\1)</code>, worth 193 points. I
+found this solution in <a href="http://stackoverflow.com/a/20774803/595990">this Stack Overflow
+answer</a>.</p>
+<p>As a side note, we can't simply write <code>(?!(.)(.)\2\1)</code>, because <code>x(?!y)</code> really
+means "select x only if it isn't followed by y." In our case: "select the start
+<code>^</code> only if isn't followed by the pattern inside the parenthesises."</p>
+<h2>6. A man, a plan</h2>
+<p>Here the mission is to match palindromes, even if it isn't possible as
+described in <a href="http://stackoverflow.com/a/247933/595990">this Stack Overflow
+answer</a>.</p>
+<p>However, it's possible to match palindromes of limited length, in this case
+with <code>^(.?)(.?)(.?).?\3\2\1$</code>, worth 168 points.</p>
+<p>An even better solution is <code>^(.)[^p].*\1$</code>, worth 177 points. The main part to
+understand is <code>^(.).*\1$</code> which matches words that start and end with the same
+letter, as palindromes obviously do. Since only the word sporous from the right
+column starts and ends with the same letter, we filter it out with <code>[^p]</code>.</p>
+<h2>7. Prime</h2>
+<p>A very cool solution to this level is <code>^(?!(..+?)\1+$)</code>, worth 285 points. What
+it will do is to match a number of x:es that is a multiple of two numbers, i.e.
+not a prime number. Then it negates the result, yielding us a selection of all
+strings from the left column.</p>
+<h2>8. Four</h2>
+<p>The pattern here is a letter repeated four times with one other letter between
+each of the pairs. For example M<strong>a</strong>k<strong>a</strong>r<strong>a</strong>k<strong>a</strong> and
+odont<strong>o</strong>n<strong>o</strong>s<strong>o</strong>l<strong>o</strong>gy. Regex to match this pattern: <code>(.).\1.\1.\1</code>,
+worth 198 points.</p>
+<p>To save a letter and score an additional point, use <code>(.)(.\1){3}</code>.</p>
+<h2>9. Order</h2>
+<p>When you think about it, a fairly obvious solution to this level is</p>
+<div class="codehilite"><pre>^a*b*c*d*e*f*g*h*i*j*k*l*m*n*o*p*q*r*s*t*u*v*w*x*y*z*$
+</pre></div>
+
+
+<p>as answered <a href="http://stackoverflow.com/a/14343382/595990">on Stack Overflow</a>,
+giving us 156 points.</p>
+<p>A slightly trimmed down version, without the unused letters, is worth 166
+points and looks like:</p>
+<div class="codehilite"><pre>^a*b*c*d*e*f*g*h*i*k*l*m*n*o*p*r*s*t*w*y*z*$
+</pre></div>
+
+
+<p>A cool cheat I found to this level is <code>^[^o].....?$</code>, worth 198 points. This
+works because the words in the left column are only 5 or 6 letters long in
+constrast to the right column's words which are at least 7 letters long except
+for oriole. oriole is filtered out with <code>[^o]</code>.</p>
+<h2>10. Triples</h2>
+<p>This is probably the hardest level. The goal is to write a regular expression
+that matches multiples of 3. I found <a href="http://quaxio.com/triple/">a blog
+post</a> describing how this problem can be written as
+a finite state machine. The huge solution the author ends up with is</p>
+<div class="codehilite"><pre>^([0369]|[258][0369]*[147]|[147]([0369]|[147][0369]*[258])*[258]|[258][0369]*[258]([0369]|[147][0369]*[258])*[258]|[147]([0369]|[147][0369]*[258])*[147][0369]*[147]|[258][0369]*[258]([0369]|[147][0369]*[258])*[147][0369]*[147])*$
+</pre></div>
+
+
+<p>This yields us 401 points.</p>
+<p>But there is apparently a short, little cheat</p>
+<div class="codehilite"><pre>00($|3|6|9|12|15)|4.2|.1.+4|55|.17
+</pre></div>
+
+
+<p>that is worth 596 points.</p>
+<h2>11. Glob</h2>
+<p>Short little 397 points cheat: <code>[bncrw][bporn]|^p|c$|ta</code></p>
+<h2>12. Balance</h2>
+<p>When a tag is opened with <code>&lt;</code> it needs to be properly closed with <code>&gt;</code>. A regex
+for this is:</p>
+<div class="codehilite"><pre>^(&lt;(&lt;(&lt;(&lt;(&lt;(&lt;&lt;&gt;&gt;)*&gt;)*&gt;)*&gt;)*&gt;)*&gt;)*$`
+</pre></div>
+
+
+<p>286 points will this give us.</p>
+<h2>13. Powers</h2>
+<p>A first solution, worth 45 points, is:</p>
+<div class="codehilite"><pre>^(x|xx|xxxx|x{8}|x{16}|x{32}|x{64}|x{128}|x{256}|x{512}|x{1024})$
+</pre></div>
+
+
+<p>With the following clever solution we will get 56 points:</p>
+<div class="codehilite"><pre>^((((((((((x)\10?)\9?)\8?)\7?)\6?)\5?)\4?)\3?)\2?)\1?$
+</pre></div>
+
+
+<p>However, I saw an even more clever and nifty solution worth 80 points:</p>
+<div class="codehilite"><pre>^(x|(xx){1,8}|x{32}|(x{64})+)$
+</pre></div>
+
+
+<h2>14. Long count &amp; 15. Long count v2</h2>
+<p>To match the complete string in the left column, we can use the regex worth 253
+points <code>((.+)0 ?\2[1]){8}</code>. However, we can skip the space and question mark in
+the middle of the regex, which will score us two additional points but won't
+match the complete left string. This yields us <code>((.+)0\2[1]){8}</code>. The regex
+will basically match pairs of 4 digit sequences where only the last digit
+changes, like in the case of 101<strong>0</strong> 101<strong>1</strong>.</p>
+<h2>16. Alphabetical</h2>
+<p>My solution, worth only 50 points:</p>
+<div class="codehilite"><pre>^(ae\w+ )*(as\w+ )*(ar\w+ )*(ea\w+ )*(en\w+ )*(er\w+ )*(es\w+ )*(rea\w+ )*(ren\w+ )*(rer\w+ )*(rese\w+ )*(rest\w+ )*(ret\w+ )*(sea\w+ )*(sen\w+ ?)*(ser\w+ )*(snarer ?)*(sta\w+ )*(strata )*(street)*(tan\w+ )*(tar\w+ ?)*(tas\w+ )*(teaser ?)*(tester)*(ten\w+ ?)*(tester )*(testes ?)*(tsetse)*$
+</pre></div>
+
+
+<p>It only works for this case, it's very long and it's ugly.</p>
+<p>A pretty nifty and complex cheat, worth 286 points, is:</p>
+<div class="codehilite"><pre>^(?!.* ((.*)t.* \2[es]|(.*)s.* \3[nr]|(.*)r.* \4[en]))
+</pre></div>
+
+
+<p>However, AlanDeSmet on Github has <a href="https://gist.github.com/jpsim/8057500/#comment-983028">this
+solution</a>:</p>
+<div class="codehilite"><pre>^(?!.*\b((.*)b.*\b\2[a]|(.*)c.*\b\3[ab]|(.*)d.*\b\4[a-c]|(.*)e.*\b\5[a-d]|(.*)f.*\b\6[a-e]|(.*)g.*\b\7[a-f]|(.*)h.*\b\8[a-g]|(.*)i.*\b\9[a-h]|(.*)j.*\b\10[a-i]|(.*)k.*\b\11[a-j]|(.*)l.*\b\12[a-k]|(.*)m.*\b\13[a-l]|(.*)n.*\b\14[a-m]|(.*)o.*\b\15[a-n]|(.*)p.*\b\16[a-o]|(.*)q.*\b\17[a-p]|(.*)r.*\b\18[a-q]|(.*)s.*\b\19[a-r]|(.*)t.*\b\20[a-s]|(.*)u.*\b\21[a-t]|(.*)v.*\b\22[a-u]|(.*)w.*\b\23[a-v]|(.*)x.*\b\24[a-w]|(.*)y.*\b\25[a-x]|(.*)z.*\b\26[a-y]))
+</pre></div>
+
+
+<p>He writes:</p>
+<blockquote>
+<p><strong>Alphabetical (-109) "Pure" solution:</strong> Should work for any number of words
+of any length limited to characters [a-z]. I haven't even considered the case
+where the words are of varying lengths, but my brain is done for tonight. But
+by my own standards, this is a cheat-free solution, and I haven't seen any
+others that meet that standard. Pity that it scores so abysmally.</p>
+</blockquote>
+      <footer>
+        
+        Post source code: <a href="https://github.com/MaTachi/MaTachi.github.io/tree/master/src/pages/regex-golf-at-regex-alf-nu.md">https://github.com/MaTachi/MaTachi.github.io/tree/master/src/pages/regex-golf-at-regex-alf-nu.md</a>
+        
+      </footer>
+    </article>
+    <div id="disqus_thread"></div>
+    <script type="text/javascript">
+        var disqus_shortname = 'matachi';
+        (function() {
+            var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        })();
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+    <a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+  </div>
+</div>
+
+  <footer id="site-footer">
+    <div class="row">
+      <div class="col-lg-12">
+        <p>© Daniel Jonsson 2013. All content is licensed under the <a href="https://creativecommons.org/licenses/by/3.0/">Creative Commons Attribution 3.0 License</a>.</p>
+        <p>The site's source code is available on <a href="https://github.com/MaTachi/MaTachi.github.io">Github</a>.</p>
+        <p>Theme from <a href="http://bootswatch.com/readable/">Bootswatch</a>. Icons from <a href="http://fontawesome.io/">Font Awesome</a>. Font from <a href="https://www.google.com/fonts/specimen/Lora">Google</a>.
+      </div>
+    </div>
+  </footer>
+</div>
+</body>
+</html>

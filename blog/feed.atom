@@ -2,10 +2,174 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
   <title type="text">Daniel 'MaTachi' Jonsson</title>
   <id>http://matachi.se/blog/feed.atom</id>
-  <updated>2013-11-28T00:00:00Z</updated>
+  <updated>2014-02-02T00:00:00Z</updated>
   <link href="http://matachi.se" />
   <link href="http://matachi.se/blog/feed.atom" rel="self" />
   <generator>Werkzeug</generator>
+  <entry xml:base="http://matachi.se/blog/feed.atom">
+    <title type="text">Regex golf at regex.alf.nu</title>
+    <id>http://matachi.se/blog/2014/02/02/regex-golf-at-regex-alf-nu</id>
+    <updated>2014-02-02T00:00:00Z</updated>
+    <published>2014-02-02T00:00:00Z</published>
+    <link href="http://matachi.se/blog/2014/02/02/regex-golf-at-regex-alf-nu" />
+    <author>
+      <name>Daniel 'MaTachi' Jonsson</name>
+    </author>
+    <content type="html">&lt;p&gt;In this blog post I will summarize some cool and interesting &quot;solutions&quot; to the
+regular expression challenges at &lt;a href=&quot;http://www.regex.alf.nu/&quot;&gt;http://www.regex.alf.nu/&lt;/a&gt;. I write solutions
+inside quotation marks because to some of the levels there are better solutions
+found, but there may also be even better unknown solutions.&lt;/p&gt;
+&lt;p&gt;I have found many of the solutions in the comments to this Github Gist:
+&lt;a href=&quot;https://gist.github.com/jpsim/8057500&quot;&gt;https://gist.github.com/jpsim/8057500&lt;/a&gt;.  It's a fun game, and I enjoy reading
+what tricks other people have come up with. I'm not a regex l33t by any means,
+but I think this game is a fun way to see what nifty things you can accomplish
+with regex. There is also a discussion thread &lt;a href=&quot;https://news.ycombinator.com/item?id=6941231&quot;&gt;at Hacker
+News&lt;/a&gt; about the game.&lt;/p&gt;
+&lt;p&gt;If you need to brush up your regular expression skills, check out Mozilla
+Developer Network's &lt;a href=&quot;https://developer.mozilla.org/en/docs/Web/JavaScript/Guide/Regular_Expressions&quot;&gt;article on the
+subject&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;I also found a cool regex visualizer on &lt;a href=&quot;http://regexp.quaxio.com/&quot;&gt;http://regexp.quaxio.com/&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;And by the way, if you can't get enough of golf, there is also a very well-made
+game called &lt;a href=&quot;http://vimgolf.com/&quot;&gt;Vim Golf&lt;/a&gt;.&lt;/p&gt;
+&lt;h2&gt;1. Plain Strings&lt;/h2&gt;
+&lt;p&gt;The solution to this level is simply &lt;code&gt;foo&lt;/code&gt;, which earns you 207 points.&lt;/p&gt;
+&lt;h2&gt;2. Anchors&lt;/h2&gt;
+&lt;p&gt;All words in the left column end with the letter k. Therefore the level is
+simply won with &lt;code&gt;k$&lt;/code&gt;, giving you 208 points.&lt;/p&gt;
+&lt;h2&gt;3. Ranges&lt;/h2&gt;
+&lt;p&gt;The left column's words only contain the letters a to f. Writing this with a
+regex yields &lt;code&gt;^[a-f]+$&lt;/code&gt; and scores us 202 points.&lt;/p&gt;
+&lt;h2&gt;4. Backrefs&lt;/h2&gt;
+&lt;p&gt;All words in the left column follow a pattern where three letters in sequence
+appear two times within the word. For example &lt;strong&gt;barbar&lt;/strong&gt;y and
+&lt;strong&gt;hea&lt;/strong&gt;vy&lt;strong&gt;hea&lt;/strong&gt;ded.&lt;/p&gt;
+&lt;p&gt;Selecting strings following this pattern can be made with the regex
+&lt;code&gt;(...).*\1&lt;/code&gt;, worth 201 points.&lt;/p&gt;
+&lt;h2&gt;5. Abba&lt;/h2&gt;
+&lt;p&gt;Here we want to select words that &lt;em&gt;don't&lt;/em&gt; contain letter sequences looking like
+an&lt;strong&gt;alla&lt;/strong&gt;gmatic, hippogr&lt;strong&gt;iffi&lt;/strong&gt;n and uncl&lt;strong&gt;assa&lt;/strong&gt;bly. Therefore we will use
+&lt;code&gt;?!&lt;/code&gt; in regex to negate our selection.&lt;/p&gt;
+&lt;p&gt;Here is a solution using negation: &lt;code&gt;^(?!.*(.)(.)\2\1)&lt;/code&gt;, worth 193 points. I
+found this solution in &lt;a href=&quot;http://stackoverflow.com/a/20774803/595990&quot;&gt;this Stack Overflow
+answer&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;As a side note, we can't simply write &lt;code&gt;(?!(.)(.)\2\1)&lt;/code&gt;, because &lt;code&gt;x(?!y)&lt;/code&gt; really
+means &quot;select x only if it isn't followed by y.&quot; In our case: &quot;select the start
+&lt;code&gt;^&lt;/code&gt; only if isn't followed by the pattern inside the parenthesises.&quot;&lt;/p&gt;
+&lt;h2&gt;6. A man, a plan&lt;/h2&gt;
+&lt;p&gt;Here the mission is to match palindromes, even if it isn't possible as
+described in &lt;a href=&quot;http://stackoverflow.com/a/247933/595990&quot;&gt;this Stack Overflow
+answer&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;However, it's possible to match palindromes of limited length, in this case
+with &lt;code&gt;^(.?)(.?)(.?).?\3\2\1$&lt;/code&gt;, worth 168 points.&lt;/p&gt;
+&lt;p&gt;An even better solution is &lt;code&gt;^(.)[^p].*\1$&lt;/code&gt;, worth 177 points. The main part to
+understand is &lt;code&gt;^(.).*\1$&lt;/code&gt; which matches words that start and end with the same
+letter, as palindromes obviously do. Since only the word sporous from the right
+column starts and ends with the same letter, we filter it out with &lt;code&gt;[^p]&lt;/code&gt;.&lt;/p&gt;
+&lt;h2&gt;7. Prime&lt;/h2&gt;
+&lt;p&gt;A very cool solution to this level is &lt;code&gt;^(?!(..+?)\1+$)&lt;/code&gt;, worth 285 points. What
+it will do is to match a number of x:es that is a multiple of two numbers, i.e.
+not a prime number. Then it negates the result, yielding us a selection of all
+strings from the left column.&lt;/p&gt;
+&lt;h2&gt;8. Four&lt;/h2&gt;
+&lt;p&gt;The pattern here is a letter repeated four times with one other letter between
+each of the pairs. For example M&lt;strong&gt;a&lt;/strong&gt;k&lt;strong&gt;a&lt;/strong&gt;r&lt;strong&gt;a&lt;/strong&gt;k&lt;strong&gt;a&lt;/strong&gt; and
+odont&lt;strong&gt;o&lt;/strong&gt;n&lt;strong&gt;o&lt;/strong&gt;s&lt;strong&gt;o&lt;/strong&gt;l&lt;strong&gt;o&lt;/strong&gt;gy. Regex to match this pattern: &lt;code&gt;(.).\1.\1.\1&lt;/code&gt;,
+worth 198 points.&lt;/p&gt;
+&lt;p&gt;To save a letter and score an additional point, use &lt;code&gt;(.)(.\1){3}&lt;/code&gt;.&lt;/p&gt;
+&lt;h2&gt;9. Order&lt;/h2&gt;
+&lt;p&gt;When you think about it, a fairly obvious solution to this level is&lt;/p&gt;
+&lt;div class=&quot;codehilite&quot;&gt;&lt;pre&gt;^a*b*c*d*e*f*g*h*i*j*k*l*m*n*o*p*q*r*s*t*u*v*w*x*y*z*$
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;as answered &lt;a href=&quot;http://stackoverflow.com/a/14343382/595990&quot;&gt;on Stack Overflow&lt;/a&gt;,
+giving us 156 points.&lt;/p&gt;
+&lt;p&gt;A slightly trimmed down version, without the unused letters, is worth 166
+points and looks like:&lt;/p&gt;
+&lt;div class=&quot;codehilite&quot;&gt;&lt;pre&gt;^a*b*c*d*e*f*g*h*i*k*l*m*n*o*p*r*s*t*w*y*z*$
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;A cool cheat I found to this level is &lt;code&gt;^[^o].....?$&lt;/code&gt;, worth 198 points. This
+works because the words in the left column are only 5 or 6 letters long in
+constrast to the right column's words which are at least 7 letters long except
+for oriole. oriole is filtered out with &lt;code&gt;[^o]&lt;/code&gt;.&lt;/p&gt;
+&lt;h2&gt;10. Triples&lt;/h2&gt;
+&lt;p&gt;This is probably the hardest level. The goal is to write a regular expression
+that matches multiples of 3. I found &lt;a href=&quot;http://quaxio.com/triple/&quot;&gt;a blog
+post&lt;/a&gt; describing how this problem can be written as
+a finite state machine. The huge solution the author ends up with is&lt;/p&gt;
+&lt;div class=&quot;codehilite&quot;&gt;&lt;pre&gt;^([0369]|[258][0369]*[147]|[147]([0369]|[147][0369]*[258])*[258]|[258][0369]*[258]([0369]|[147][0369]*[258])*[258]|[147]([0369]|[147][0369]*[258])*[147][0369]*[147]|[258][0369]*[258]([0369]|[147][0369]*[258])*[147][0369]*[147])*$
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;This yields us 401 points.&lt;/p&gt;
+&lt;p&gt;But there is apparently a short, little cheat&lt;/p&gt;
+&lt;div class=&quot;codehilite&quot;&gt;&lt;pre&gt;00($|3|6|9|12|15)|4.2|.1.+4|55|.17
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;that is worth 596 points.&lt;/p&gt;
+&lt;h2&gt;11. Glob&lt;/h2&gt;
+&lt;p&gt;Short little 397 points cheat: &lt;code&gt;[bncrw][bporn]|^p|c$|ta&lt;/code&gt;&lt;/p&gt;
+&lt;h2&gt;12. Balance&lt;/h2&gt;
+&lt;p&gt;When a tag is opened with &lt;code&gt;&amp;lt;&lt;/code&gt; it needs to be properly closed with &lt;code&gt;&amp;gt;&lt;/code&gt;. A regex
+for this is:&lt;/p&gt;
+&lt;div class=&quot;codehilite&quot;&gt;&lt;pre&gt;^(&amp;lt;(&amp;lt;(&amp;lt;(&amp;lt;(&amp;lt;(&amp;lt;&amp;lt;&amp;gt;&amp;gt;)*&amp;gt;)*&amp;gt;)*&amp;gt;)*&amp;gt;)*&amp;gt;)*$`
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;286 points will this give us.&lt;/p&gt;
+&lt;h2&gt;13. Powers&lt;/h2&gt;
+&lt;p&gt;A first solution, worth 45 points, is:&lt;/p&gt;
+&lt;div class=&quot;codehilite&quot;&gt;&lt;pre&gt;^(x|xx|xxxx|x{8}|x{16}|x{32}|x{64}|x{128}|x{256}|x{512}|x{1024})$
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;With the following clever solution we will get 56 points:&lt;/p&gt;
+&lt;div class=&quot;codehilite&quot;&gt;&lt;pre&gt;^((((((((((x)\10?)\9?)\8?)\7?)\6?)\5?)\4?)\3?)\2?)\1?$
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;However, I saw an even more clever and nifty solution worth 80 points:&lt;/p&gt;
+&lt;div class=&quot;codehilite&quot;&gt;&lt;pre&gt;^(x|(xx){1,8}|x{32}|(x{64})+)$
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h2&gt;14. Long count &amp;amp; 15. Long count v2&lt;/h2&gt;
+&lt;p&gt;To match the complete string in the left column, we can use the regex worth 253
+points &lt;code&gt;((.+)0 ?\2[1]){8}&lt;/code&gt;. However, we can skip the space and question mark in
+the middle of the regex, which will score us two additional points but won't
+match the complete left string. This yields us &lt;code&gt;((.+)0\2[1]){8}&lt;/code&gt;. The regex
+will basically match pairs of 4 digit sequences where only the last digit
+changes, like in the case of 101&lt;strong&gt;0&lt;/strong&gt; 101&lt;strong&gt;1&lt;/strong&gt;.&lt;/p&gt;
+&lt;h2&gt;16. Alphabetical&lt;/h2&gt;
+&lt;p&gt;My solution, worth only 50 points:&lt;/p&gt;
+&lt;div class=&quot;codehilite&quot;&gt;&lt;pre&gt;^(ae\w+ )*(as\w+ )*(ar\w+ )*(ea\w+ )*(en\w+ )*(er\w+ )*(es\w+ )*(rea\w+ )*(ren\w+ )*(rer\w+ )*(rese\w+ )*(rest\w+ )*(ret\w+ )*(sea\w+ )*(sen\w+ ?)*(ser\w+ )*(snarer ?)*(sta\w+ )*(strata )*(street)*(tan\w+ )*(tar\w+ ?)*(tas\w+ )*(teaser ?)*(tester)*(ten\w+ ?)*(tester )*(testes ?)*(tsetse)*$
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;It only works for this case, it's very long and it's ugly.&lt;/p&gt;
+&lt;p&gt;A pretty nifty and complex cheat, worth 286 points, is:&lt;/p&gt;
+&lt;div class=&quot;codehilite&quot;&gt;&lt;pre&gt;^(?!.* ((.*)t.* \2[es]|(.*)s.* \3[nr]|(.*)r.* \4[en]))
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;However, AlanDeSmet on Github has &lt;a href=&quot;https://gist.github.com/jpsim/8057500/#comment-983028&quot;&gt;this
+solution&lt;/a&gt;:&lt;/p&gt;
+&lt;div class=&quot;codehilite&quot;&gt;&lt;pre&gt;^(?!.*\b((.*)b.*\b\2[a]|(.*)c.*\b\3[ab]|(.*)d.*\b\4[a-c]|(.*)e.*\b\5[a-d]|(.*)f.*\b\6[a-e]|(.*)g.*\b\7[a-f]|(.*)h.*\b\8[a-g]|(.*)i.*\b\9[a-h]|(.*)j.*\b\10[a-i]|(.*)k.*\b\11[a-j]|(.*)l.*\b\12[a-k]|(.*)m.*\b\13[a-l]|(.*)n.*\b\14[a-m]|(.*)o.*\b\15[a-n]|(.*)p.*\b\16[a-o]|(.*)q.*\b\17[a-p]|(.*)r.*\b\18[a-q]|(.*)s.*\b\19[a-r]|(.*)t.*\b\20[a-s]|(.*)u.*\b\21[a-t]|(.*)v.*\b\22[a-u]|(.*)w.*\b\23[a-v]|(.*)x.*\b\24[a-w]|(.*)y.*\b\25[a-x]|(.*)z.*\b\26[a-y]))
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;He writes:&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;strong&gt;Alphabetical (-109) &quot;Pure&quot; solution:&lt;/strong&gt; Should work for any number of words
+of any length limited to characters [a-z]. I haven't even considered the case
+where the words are of varying lengths, but my brain is done for tonight. But
+by my own standards, this is a cheat-free solution, and I haven't seen any
+others that meet that standard. Pity that it scores so abysmally.&lt;/p&gt;
+&lt;/blockquote&gt;</content>
+  </entry>
   <entry xml:base="http://matachi.se/blog/feed.atom">
     <title type="text">Solutions to the wargame XSS Challenges at xss-quiz.int21h.jp</title>
     <id>http://matachi.se/blog/2013/11/28/solutions-to-the-wargame-xss-challenges-at-xss-quiz-int21h-jp</id>
