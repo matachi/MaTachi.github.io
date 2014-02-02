@@ -32,7 +32,7 @@ $ ./freeze.py
 * [Pygments](http://pygments.org/), [BSD License](http://pygments.org/faq/)
 * [Bootstrap](http://getbootstrap.com/), [Apache License version
   2.0](https://github.com/twbs/bootstrap/blob/master/LICENSE)
-* [Bootswatch Readable](http://bootswatch.com/readable/), [Apache License
+* [Bootswatch Flatly](http://bootswatch.com/flatly/), [Apache License
   version 2.0](https://github.com/thomaspark/bootswatch/blob/gh-pages/LICENSE)
 * [jQuery](http://jquery.com/), [MIT
   License](https://github.com/jquery/jquery/blob/master/MIT-LICENSE.txt)
