@@ -233,11 +233,27 @@ Stage #14
 The point on this stage is also to inject JavaScript through a style attribute,
 so I assume this neither will work, as the previous stage.
 
-Stage #15 & Stage #16
+Stage #15
 ---------------------
 
-Unsure if these two work. We are supposed to inject JavaScript through
-`document.write()`, but I can't find anything that works.
+The HEX encoding work '\x3e' == > . But if notices it returns x3e without \ (backslash).
+Lets try double  backslash \\x3e and returns >.
+file suggests that the following should work:
+
+    :::html
+    \\x3cscript\\x3ealert(document.domain);\\x3c/script\\x3e
+
+
+Stage #16
+---------------------
+
+The unicode encoding work '\u003e' == > . But if notices it returns u003e without \ (backslash).
+Lets try double  backslash \\u003e and returns >.
+file suggests that the following should work:
+
+    :::html
+    \\u003cscript\\u003ealert(document.domain);\\u003c/script\\u003e
+
 
 Stage #19
 ---------
